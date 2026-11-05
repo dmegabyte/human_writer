@@ -10,6 +10,7 @@ class WriterConfig:
     # Режимы и тумблеры улучшений
     enable_hyperlocal: bool = True       # подмешивать реальные топонимы/факты (район, потолки, улицу)
     enable_personas: bool = True         # использовать ролевые маски (мама, технарь, автомобилист, удаленщик)
+    enable_persona_tags: bool = True     # выводить в теге персону и тему: [Средний | Мама с коляской | Вход без порогов]
     enable_burstiness: bool = True       # живой рубленый ритм речи
     slang_level: str = "medium"          # "none", "medium", "high"
     
