@@ -25,7 +25,6 @@ class HumanWriterEngine:
     def _resolve_spintax(self, text: str, rng: random.Random) -> str:
         """Раскрывает спин-синтаксис вида {вариант1|вариант2|вариант3}."""
         if not self.config.enable_spintax or "{" not in text:
-            # Если спинтакс отключен, подставляем первый вариант
             return re.sub(r"\{([^{}|]+)(?:\|[^{}]+)*\}", r"\1", text)
         
         pattern = re.compile(r"\{([^{}]+)\}")
@@ -46,9 +45,12 @@ class HumanWriterEngine:
         has_concierge = bool(facts.get("has_concierge", False))
         has_park_near = bool(facts.get("has_park_near", False))
         has_water_near = bool(facts.get("has_water_near", False))
+        has_balcony = bool(facts.get("has_balcony", False))
         metro_station = facts.get("metro_station")
         highway_name = facts.get("highway_name")
         finish_type = facts.get("finish_type")
+        climate_zone = facts.get("climate_zone", "central")
+        housing_class = facts.get("housing_class", "comfort")
         district = str(facts.get("district", "")).strip()
         ceiling_height = facts.get("ceiling_height")
 
@@ -56,24 +58,65 @@ class HumanWriterEngine:
         cfg = self.config
         revs = []
 
-        # 1. СУПЕРКОРОТКИЕ КАТЕГОРИИ (С ротацией тем, спин-синтаксисом и Vibe-контролем)
+        # 1. СИТУАТИВНЫЙ ВЫБОР БАЗОВЫХ ПУЛОВ (Климат, Класс, Отделка, Балкон)
+        # Окна: Премиум vs Комфорт
+        if housing_class in ["premium", "business"] and hasattr(p, "CAT_0_WINDOWS_PREMIUM"):
+            pool_windows = p.CAT_0_WINDOWS_PREMIUM
+        else:
+            pool_windows = p.CAT_0_WINDOWS
+
+        # Отопление: Юг vs Север vs Центр
+        if climate_zone == "south" and hasattr(p, "CAT_1_HEATING_SOUTH"):
+            pool_heating = p.CAT_1_HEATING_SOUTH
+        elif climate_zone == "north" and hasattr(p, "CAT_1_HEATING_NORTH"):
+            pool_heating = p.CAT_1_HEATING_NORTH
+        else:
+            pool_heating = getattr(p, "CAT_1_HEATING_CENTRAL", p.CAT_1_HEATING)
+
+        # Подъезд / Лобби: Премиум vs Комфорт
+        if housing_class in ["premium", "business"] and hasattr(p, "CAT_4_ENTRANCE_PREMIUM"):
+            pool_entrance = p.CAT_4_ENTRANCE_PREMIUM
+        else:
+            pool_entrance = p.CAT_4_ENTRANCE
+
+        # Двор: Юг (тень, зелень) vs Север (снег) vs Центр
+        if climate_zone == "south" and hasattr(p, "CAT_5_COURTYARD_SOUTH"):
+            pool_courtyard = p.CAT_5_COURTYARD_SOUTH
+        elif climate_zone == "north" and hasattr(p, "CAT_5_COURTYARD_NORTH"):
+            pool_courtyard = p.CAT_5_COURTYARD_NORTH
+        else:
+            pool_courtyard = getattr(p, "CAT_5_COURTYARD_CENTRAL", p.CAT_5_COURTYARD)
+
+        # Балкон vs Планировка (если балкона нет)
+        if has_balcony and hasattr(p, "CAT_8_BALCONY"):
+            space_tuple = ("Балкон", p.CAT_8_BALCONY)
+        else:
+            space_tuple = ("Планировка", getattr(p, "CAT_8_LAYOUT", p.CAT_0_WINDOWS))
+
+        # Электрика: В бетоне vs С отделкой
+        if finish_type == "bare_concrete" and hasattr(p, "CAT_9_LIGHT_CONCRETE"):
+            pool_light = p.CAT_9_LIGHT_CONCRETE
+        else:
+            pool_light = getattr(p, "CAT_9_LIGHT_FINISHED", getattr(p, "CAT_9_LIGHT", p.CAT_1_HEATING))
+
+        # Формирование категорий
         tech_cats = [
-            ("Окна", p.CAT_0_WINDOWS),
-            ("Отопление", p.CAT_1_HEATING),
+            ("Окна", pool_windows),
+            ("Отопление", pool_heating),
             ("Вода", p.CAT_2_WATER),
-            ("Стены", getattr(p, "CAT_7_WALLS", p.CAT_0_WINDOWS)),
-            ("Свет", getattr(p, "CAT_9_LIGHT", p.CAT_1_HEATING)),
-            ("Балкон", getattr(p, "CAT_8_BALCONY", p.CAT_0_WINDOWS)),
+            ("Стены", getattr(p, "CAT_7_WALLS", pool_windows)),
+            ("Свет", pool_light),
+            space_tuple,
             ("Лифты", p.CAT_3_ELEVATORS),
         ]
         warm_cats = [
-            ("Двор", p.CAT_5_COURTYARD),
-            ("Подъезд", p.CAT_4_ENTRANCE),
+            ("Двор", pool_courtyard),
+            ("Подъезд", pool_entrance),
             ("Безопасность", p.CAT_6_SECURITY),
-            ("Холл", getattr(p, "CAT_10_STORAGE", p.CAT_4_ENTRANCE)),
+            ("Холл", getattr(p, "CAT_10_STORAGE", pool_entrance)),
             ("Лифты", p.CAT_3_ELEVATORS),
-            ("Окна", p.CAT_0_WINDOWS),
-            ("Отопление", p.CAT_1_HEATING),
+            ("Окна", pool_windows),
+            ("Отопление", pool_heating),
         ]
 
         if cfg.vibe == "pragmatic":
@@ -81,19 +124,18 @@ class HumanWriterEngine:
         elif cfg.vibe == "warm":
             pool_base = warm_cats + tech_cats[:4]
         else:
-            # Balanced
             pool_base = [
-                ("Окна", p.CAT_0_WINDOWS),
-                ("Отопление", p.CAT_1_HEATING),
+                ("Окна", pool_windows),
+                ("Отопление", pool_heating),
                 ("Вода", p.CAT_2_WATER),
                 ("Лифты", p.CAT_3_ELEVATORS),
-                ("Подъезд", p.CAT_4_ENTRANCE),
-                ("Двор", p.CAT_5_COURTYARD),
+                ("Подъезд", pool_entrance),
+                ("Двор", pool_courtyard),
                 ("Безопасность", p.CAT_6_SECURITY)
             ]
             if hasattr(p, "CAT_7_WALLS"): pool_base.append(("Стены", p.CAT_7_WALLS))
-            if hasattr(p, "CAT_8_BALCONY"): pool_base.append(("Балкон", p.CAT_8_BALCONY))
-            if hasattr(p, "CAT_9_LIGHT"): pool_base.append(("Свет", p.CAT_9_LIGHT))
+            pool_base.append(space_tuple)
+            pool_base.append(("Свет", pool_light))
             if hasattr(p, "CAT_10_STORAGE"): pool_base.append(("Холл", p.CAT_10_STORAGE))
 
         if cfg.enable_topic_rotation:
@@ -165,9 +207,8 @@ class HumanWriterEngine:
             rng_med1 = random.Random(idx * 10061 + 71)
             rng_med2 = random.Random(idx * 10067 + 83)
             
-            # Роль 1
+            # Роль 1: Семья или Удаленщик
             if cfg.vibe == "warm" or (idx % 2 == 0 and cfg.vibe != "pragmatic"):
-                # Семья / Мама
                 if has_stroller_room:
                     tag_p1 = self._format_tag("Средний", "Мама с коляской", "Колясочная и вход")
                     body_p1 = p.MED_FAMILY_STROLLER_ROOM[idx % len(p.MED_FAMILY_STROLLER_ROOM)]
@@ -178,14 +219,13 @@ class HumanWriterEngine:
                     tag_p1 = self._format_tag("Средний", "Мама с коляской", "Вход без порогов и площадка")
                     body_p1 = p.MED_FAMILY_BASE[idx % len(p.MED_FAMILY_BASE)]
             else:
-                # Удаленщик
                 tag_p1 = self._format_tag("Средний", "Удаленщик", "Тишина и интернет")
                 body_p1 = p.MED_REMOTE_BASE[idx % len(p.MED_REMOTE_BASE)]
             
             body_p1 = self._resolve_spintax(body_p1, rng_med1)
             revs.append(f"{tag_p1} {body_p1}")
 
-            # Роль 2 (С учетом реального типа отделки, если известен)
+            # Роль 2: С учетом реального типа отделки, паркинга или консьержа
             if finish_type == "turnkey" and hasattr(p, "MED_FINISH_TURNKEY"):
                 tag_p2 = self._format_tag("Средний", "Новосел", "Ремонт от застройщика")
                 raw_p2 = p.MED_FINISH_TURNKEY[idx % len(p.MED_FINISH_TURNKEY)]
@@ -240,7 +280,6 @@ class HumanWriterEngine:
         revs.append(f"{tag_long} {l1} {l2} {l3}")
 
         # 5. СТРОГАЯ ВАЛИДАЦИЯ С УЧЕТОМ ФАКТОВ
-        target_names = facts.get("target_names", [])
         self.validator.validate_batch(revs, forbidden_names=target_names, facts=facts)
 
         return revs

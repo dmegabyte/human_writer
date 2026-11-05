@@ -113,7 +113,28 @@ class FactExtractor:
         elif "чернов" in all_text or "без отделки" in all_text or "свободн" in all_text or "в бетоне" in all_text:
             finish_type = "bare_concrete"  # в бетоне под свой ремонт с нуля
 
-        # 13. Название комплекса для проверки на запрет утечек
+        # 13. Климатическая зона (Юг, Север, Центр)
+        d_clean = district.lower().strip()
+        if d_clean in ['kras', 'krym', 'rostov-na-donu', 'rostov', 'stavropol', 'maykop', 'novorossiya'] or any(city in all_text for city in ['сочи', 'краснодар', 'ялта', 'севастополь', 'анапа', 'новороссийск', 'геленджик', 'симферополь']):
+            climate_zone = "south"
+        elif d_clean in ['ekb', 'perm', 'omsk', 'kirov'] or any(city in all_text for city in ['екатеринбург', 'пермь', 'омск', 'киров', 'сибирь', 'урал']):
+            climate_zone = "north"
+        else:
+            climate_zone = "central"
+
+        # 14. Класс жилья (Премиум/Элит, Бизнес, Комфорт/Стандарт)
+        b_class = row.get("building_class")
+        if (pd.notna(b_class) and float(b_class) in [3.0, 5.0]) or any(kw in all_text for kw in ['премиум', 'deluxe', 'делюкс', 'элитн']):
+            housing_class = "premium"
+        elif (pd.notna(b_class) and float(b_class) == 1.0) or 'бизнес' in all_text:
+            housing_class = "business"
+        else:
+            housing_class = "comfort"
+
+        # 15. Наличие балкона или лоджии
+        has_balcony = bool("балкон" in all_text or "лоджи" in all_text)
+
+        # 16. Название комплекса для проверки на запрет утечек
         raw_name = str(row.get("name", ""))
         clean_name = re.sub(r"^(ЖК|Жилой комплекс|МФК|Квартал|Дом)\s+", "", raw_name, flags=re.I).strip()
 
@@ -126,6 +147,9 @@ class FactExtractor:
             "has_park_near": has_park_near,
             "has_water_near": has_water_near,
             "has_high_ceil": has_high_ceil,
+            "has_balcony": has_balcony,
+            "climate_zone": climate_zone,
+            "housing_class": housing_class,
             "ceiling_height": ceiling_val,
             "metro_station": metro_station,
             "highway_name": highway_name,
