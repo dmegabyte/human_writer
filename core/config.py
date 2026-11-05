@@ -14,6 +14,7 @@ class WriterConfig:
     enable_burstiness: bool = True       # живой рубленый ритм речи
     enable_spintax: bool = True          # динамическое раскрытие спин-синтаксиса {вариант1|вариант2} для тысяч вариаций
     enable_topic_rotation: bool = True   # перемешивание тем и слотов от дома к дому (защита от однообразия)
+    vibe: str = "balanced"               # тональность отзыва: "balanced" (баланс), "pragmatic" (сухой/технарь), "warm" (семейный/уют)
     slang_level: str = "medium"          # "none", "medium", "high"
     
     # Правила качества (Slop-Shield)

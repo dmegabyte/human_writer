@@ -57,6 +57,7 @@ human_writer/
 | `enable_burstiness` | `boolean` | `true` | **Switch / Чекбокс** | Живой рваный ритм речи (чередование коротких и емких фраз) |
 | `enable_spintax` | `boolean` | `true` | **Switch / Чекбокс** | Мультипликатор синонимов `{А\|Б\|В}` (тысячи уникальных формулировок) |
 | `enable_topic_rotation` | `boolean` | `true` | **Switch / Чекбокс** | Перемешивание порядка тем от дома к дому (защита от цикличности) |
+| `vibe` | `string` | `"balanced"` | **Dropdown (Select)** | Эмоциональный тон: `balanced` (баланс), `pragmatic` (сухой технарь), `warm` (семейный уют) |
 | `ban_dashes` | `boolean` | `true` | **Switch / Чекбокс** | Строгий запрет длинных и средних тире (`—`, `–`) |
 | `ban_target_names` | `boolean` | `true` | **Switch / Чекбокс** | Запрет названия ЖК в тексте (жители говорят «в доме», «у нас») |
 | `slang_level` | `string` | `"medium"` | **Dropdown (Select)** | Уровень разговорности: `none`, `medium`, `high` |
@@ -135,6 +136,10 @@ facts = {
     "has_stroller_room": False,   # Нет отдельной колясочной
     "has_concierge": False,       # Нет консьержа / охраны
     "has_park_near": True,        # Рядом есть парк или сквер
+    "has_water_near": True,       # Рядом есть набережная / река
+    "metro_station": "Смоленская",# Станция метро в пешей доступности
+    "highway_name": "Новый Арбат",# Шоссе / проспект для автомобилиста
+    "finish_type": "turnkey",     # Тип отделки: "turnkey" (с готовым ремонтом), "pre_finish" (предчистовая, без вайтбокса), "bare_concrete" (в бетоне с нуля)
     "district": "Академический",  # Район (для гиперлокальности)
     "ceiling_height": 3.05        # Высота потолков в метрах
 }
