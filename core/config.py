@@ -1,4 +1,4 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, asdict
 from typing import List, Dict, Optional
 import json
 
@@ -29,6 +29,10 @@ class WriterConfig:
     shorts_count: int = 2
     mediums_count: int = 2
     longs_count: int = 1
+
+    def to_dict(self) -> dict:
+        """Сериализация конфига в словарь для REST API / UI."""
+        return asdict(self)
 
     @classmethod
     def from_dict(cls, data: dict) -> "WriterConfig":
