@@ -1,0 +1,14 @@
+{
+  "project_name": "kvadrum_agregator",
+  "preset_name": "real_estate",
+  "enable_hyperlocal": true,
+  "enable_personas": true,
+  "enable_burstiness": true,
+  "slang_level": "medium",
+  "ban_dashes": true,
+  "ban_target_names": true,
+  "super_shorts_count": 7,
+  "shorts_count": 2,
+  "mediums_count": 2,
+  "longs_count": 1
+}
