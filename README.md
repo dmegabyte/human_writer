@@ -55,6 +55,8 @@ human_writer/
 | `enable_personas` | `boolean` | `true` | **Switch / Чекбокс** | Использовать ролевые маски (мама, автомобилист, технарь, удаленщик) |
 | `enable_persona_tags` | `boolean` | `true` | **Switch / Чекбокс** | Выводить теги в начале отзыва: `[Тип \| Роль \| Тема]` |
 | `enable_burstiness` | `boolean` | `true` | **Switch / Чекбокс** | Живой рваный ритм речи (чередование коротких и емких фраз) |
+| `enable_spintax` | `boolean` | `true` | **Switch / Чекбокс** | Мультипликатор синонимов `{А\|Б\|В}` (тысячи уникальных формулировок) |
+| `enable_topic_rotation` | `boolean` | `true` | **Switch / Чекбокс** | Перемешивание порядка тем от дома к дому (защита от цикличности) |
 | `ban_dashes` | `boolean` | `true` | **Switch / Чекбокс** | Строгий запрет длинных и средних тире (`—`, `–`) |
 | `ban_target_names` | `boolean` | `true` | **Switch / Чекбокс** | Запрет названия ЖК в тексте (жители говорят «в доме», «у нас») |
 | `slang_level` | `string` | `"medium"` | **Dropdown (Select)** | Уровень разговорности: `none`, `medium`, `high` |

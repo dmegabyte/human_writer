@@ -4,6 +4,8 @@
   "enable_hyperlocal": true,
   "enable_personas": true,
   "enable_burstiness": true,
+  "enable_spintax": true,
+  "enable_topic_rotation": true,
   "slang_level": "medium",
   "ban_dashes": true,
   "ban_target_names": true,

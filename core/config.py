@@ -12,6 +12,8 @@ class WriterConfig:
     enable_personas: bool = True         # использовать ролевые маски (мама, технарь, автомобилист, удаленщик)
     enable_persona_tags: bool = True     # выводить в теге персону и тему: [Средний | Мама с коляской | Вход без порогов]
     enable_burstiness: bool = True       # живой рубленый ритм речи
+    enable_spintax: bool = True          # динамическое раскрытие спин-синтаксиса {вариант1|вариант2} для тысяч вариаций
+    enable_topic_rotation: bool = True   # перемешивание тем и слотов от дома к дому (защита от однообразия)
     slang_level: str = "medium"          # "none", "medium", "high"
     
     # Правила качества (Slop-Shield)
